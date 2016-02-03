@@ -178,7 +178,7 @@ end
 -- Save the content of _config to config.lua
 function save_config( )
   serialize_to_file(_config, './data/config.lua')
-  print ('saved config into ./data/config.lua')
+  print ('Salvato il file config in ./data/config.lua')
 end
 
 -- Returns the config from config.lua file.
@@ -187,7 +187,7 @@ function load_config( )
   local f = io.open('./data/config.lua', "r")
   -- If config.lua doesn't exist
   if not f then
-    print ("Created new config file: data/config.lua")
+    print ("Creato nuovo file config: data/config.lua")
     create_config()
   else
     f:close()
@@ -223,7 +223,7 @@ function create_config( )
     "contatta",
     "ping",
     "tagall",
-    "block"
+    "admin"
     },
     sudo_users = {23646077,0,tonumber(our_id)},--Sudo users
     disabled_channels = {},
@@ -286,6 +286,7 @@ function load_plugins()
 
     if not ok then
       print('\27[31mErrore nel caricamento del plugin '..v..'\27[39m')
+      print(tostring(io.popen("lua plugins/"..v..".lua"):read('*all')))
       print('\27[31m'..err..'\27[39m')
     end
 
