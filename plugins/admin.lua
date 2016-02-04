@@ -48,6 +48,10 @@ local function user_info_callback(cb_extra, success, result)
   text = text:gsub("[{}]", "")
   text = text:gsub('"', "")
   text = text:gsub(",","")
+  text = text:gsub("first_name","nome")
+  text = text:gsub("last_name","cognome")
+  text = text:gsub("print_name","nome per intero")
+  text = text:gsub("type","tipo")
   if cb_extra.msg.to.type == "chat" then
     send_large_msg("chat#id"..cb_extra.msg.to.id, text)
   else
@@ -105,6 +109,24 @@ local function get_dialog_list_callback(cb_extra, success, result)
   file:close()
   send_document("user#id"..cb_extra.target,"dialog_list.json", ok_cb, false)--json format
 end
+
+local function res_callback(extra, success, result)
+  local user = result.id
+  local name = string.gsub(result.print_name, "_", " ")
+  local action = extra.action
+  if action == 'pm' then
+    local text = extra.text
+    send_large_msg("user#id"..user, text)
+  elseif action == 'block' then
+    block_user("user#id"..user, ok_cb, false)
+  elseif action == 'unblock' then
+    unblock_user("user#id"..user, ok_cb, false)
+  elseif action == 'del' then
+    del_contact("user#id"..user, ok_cb, false)
+  end
+  return user
+end
+
 local function run(msg,matches)
     local data = load_data(_config.moderation.data)
     local receiver = get_receiver(msg)
@@ -124,19 +146,43 @@ local function run(msg,matches)
     	return 'Per favore, inviami la nuova foto ora'
     end
     if matches[1] == "pm" then
-    	send_large_msg("user#id"..matches[2],matches[3])
-    	return "Messaggio inviato"
+      if string.match(matches[2], '^%d+$') then
+    	  send_large_msg("user#id"..matches[2], matches[3])
+    	  return "Messaggio inviato"
+    	else
+    	  local username = matches[2]:gsub("@","")
+    	  local text, action
+    	  local res_extra = {text = matches[3], action = 'pm'}
+    	  send_large_msg(receiver, 'Messaggio inviato')
+    	  return res_user(username,  res_callback, res_extra)
+    	end
     end
     if matches[1] == "bloccautente" then
     	if is_admin2(matches[2]) then
     		return "Non puoi bloccare un admin"
     	end
-    	block_user("user#id"..matches[2],ok_cb,false)
-    	return "Utente bloccato"
+    	if string.match(matches[2], '^%d+$') then
+    	  block_user("user#id"..matches[2], ok_cb, false)
+    	  return "Utente bloccato"
+    	else
+    	  local username = matches[2]:gsub("@","")
+    	  local text, action
+    	  local res_extra = {text = '', action = 'block'}
+    	  send_large_msg(receiver, 'Utente bloccato')
+    	  return res_user(username, res_callback, res_extra)
+    	end
     end
     if matches[1] == "sbloccautente" then
-    	unblock_user("user#id"..matches[2],ok_cb,false)
-    	return "Utente sbloccato"
+    	if string.match(matches[2], '^%d+$') then
+    	  unblock_user("user#id"..matches[2], ok_cb, false)
+    	  return "Utente sbloccato"
+    	else
+    	  local username = matches[2]:gsub("@","")
+    	  local text, action
+    	  local res_extra = {text = '', action = 'unblock'}
+    	  send_large_msg(receiver, 'Utente bloccato')
+    	  return res_user(username, res_callback, res_extra)
+    	end
     end
     if matches[1] == "importa" then--join by group link
     	local hash = parsed_url(matches[2])
@@ -147,8 +193,16 @@ local function run(msg,matches)
       return "Ti ho inviato la lista contatti sottoforma di file e json in privato"
     end
     if matches[1] == "eliminacont" then
-      del_contact("user#id"..matches[2],ok_cb,false)
-      return "L\'utente "..matches[2].." è stato eliminato dalla lista dei contatti"
+      if string.match(matches[2], '^%d+$') then
+        del_contact("user#id"..matches[2],ok_cb,false)
+        return "L\'utente "..matches[2].." è stato eliminato dalla lista dei contatti"
+      else
+        local username = matches[2]:gsub("@","")
+    	  local text, action
+    	  local res_extra = {text = '', action = 'del'}
+    	  send_large_msg(receiver, 'Contatto eliminato')
+    	  return res_user(username,  res_callback, res_extra)
+    	end
     end
     if matches[1] == "dialog" then
       get_dialog_list(get_dialog_list_callback, {target = msg.from.id})
@@ -161,16 +215,16 @@ local function run(msg,matches)
 end
 return {
   patterns = {
-	"^[!/](pm) (%d+) (.*)$",
-	"^[!/](importa) (.*)$",
-	"^[!/](sbloccautente) (%d+)$",
-	"^[!/](bloccautente) (%d+)$",
-	"^[!/](fotobot)$",
+	"^/(pm) (@?[%d%a]+) (.*)$",
+	"^/(importa) (.*)$",
+	"^/(sbloccautente) (@?[%d%a]+)$",
+	"^/(bloccautente) (@?[%d%a]+)$",
+	"^/(fotobot)$",
 	"%[(photo)%]",
-	"^[!/](contatti)$",
-	"^[!/](dialog)$",
-	"^[!/](eliminacont) (%d+)$",
-	"^[!/](chi) (%d+)$"
+	"^/(contatti)$",
+	"^/(dialog)$",
+	"^/(eliminacont) (@?[%d%a]+)$",
+	"^/(chi) (%d+)$"
   },
   run = run,
 }
