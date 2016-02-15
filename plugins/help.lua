@@ -107,6 +107,8 @@ local prg='\nCOMANDI PER IL PROPRIETARIO (IN GRUPPO)\n'
   ..'• /setboss [id] : imposta il nuovo proprietario del gruppo\n'
   ..'• /tagga [messaggio] : tagga tutti i membri del gruppo in un messaggio\n'
   ..'• /kickanouser : rimuovi gli utenti senza uno username\n'
+  ..'• /promuovi [id|username|risposta] : promuovi utente a moderatore\n'
+  ..'• /degrada [id|username|risposta] : rimuovi l\'utente dai moderatori\n'
   
 
 
@@ -114,8 +116,6 @@ local mo='\nCOMANDI PER MODERATORI\n'
   ..'• /invita [username] : invita l\'utente nel gruppo\n'
   ..'• /nome [nome] : cambia il nome del gruppo\n'
   ..'• /foto : cambia la foto del gruppo (inviala dopo aver richiesto il comando sotto forma di immagine\n'
-  ..'• /promuovi [id|username|risposta] : promuovi utente ad amministratore\n'
-  ..'• /degrada [id|username|risposta] : rimuovi l\'utente dagli amministratori\n'
   ..'• /setta [regole|about] [regole|descrizione] : imposta le regole/la descrizione del gruppo\n'
   ..'• /[blocca|sblocca] [nome|membri|flood|arabo|bot] : blocca/sblocca il nome/impedisci l\'entrata di nuovi membri/attiva il blocco flood/rimuovi chi scrive caratteri arabi/impoedisci l\'aggiunta di bot\n'
   ..'• /setflood [5-20] : imposta la sensibiltà del kick per flood\n'
