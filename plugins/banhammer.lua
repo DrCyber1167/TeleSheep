@@ -17,6 +17,7 @@ local function pre_process(msg)
     end
     -- Check if banned user joins chat
     if action == 'chat_add_user' then
+      local data = load_data(_config.moderation.data)
       local user_id = msg.action.user.id
       print('Controllo id invitato: '..user_id)
       local banned = is_banned(user_id, msg.to.id)
